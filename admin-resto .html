@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - chez eric</title>
+    <style>
+        /* Même CSS que précédemment */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f8f9fa;
+            padding: 2rem;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
+        
+        .admin-header {
+            background: #2c3e50;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-logout {
+            padding: 0.5rem 1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .resto-controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .status-toggle {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 80px;
+            height: 40px;
+            background: #bdc3c7;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #27ae60;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(40px);
+        }
+        
+        .phone-input {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .phone-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .btn-save {
+            padding: 0.8rem 2rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .menu-editor {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+        }
+        
+        .menu-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 1rem;
+        }
+        
+        .tab-btn {
+            padding: 0.5rem 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        
+        .tab-btn.active {
+            color: #e74c3c;
+            border-bottom: 3px solid #e74c3c;
+        }
+        
+        .menu-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .menu-item-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .menu-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        
+        .menu-item-info {
+            flex: 1;
+        }
+        
+        .menu-item-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price-input {
+            width: 100px;
+            padding: 0.3rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+        
+        .availability-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-update {
+            padding: 0.3rem 0.8rem;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 5px;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            margin: 1rem 0;
+        }
+        
+        .qr-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            border-left: 5px solid #3498db;
+        }
+        
+        .btn-qr {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        
+        .btn-qr:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE DE CONNEXION -->
+    <div id="loginPage" class="login-container">
+        <h1 style="color: #e74c3c; margin-bottom: 1rem;">🍽️ chez eric</h1>
+        <h2 style="margin-bottom: 2rem;">Espace Gérant</h2>
+        <input type="password" id="restoPassword" class="password-input" placeholder="Mot de passe restaurant" autofocus>
+        <button id="loginBtn" class="btn-login">Connexion</button>
+        <div id="loginError" class="error-message"></div>
+        <p style="margin-top: 2rem; color: #7f8c8d; font-size: 0.9rem;">
+            Mot de passe par défaut : <strong>resto123</strong>
+        </p>
+    </div>
+    
+    <!-- INTERFACE ADMIN RESTAURANT -->
+    <div id="adminPage" class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>⚙️ [NOM_RESTAURANT]</h1>
+                <p style="opacity: 0.9;">Gestion du menu et des commandes</p>
+            </div>
+            <button id="logoutBtn" class="btn-logout">Déconnexion</button>
+        </div>
+        
+        <!-- CONTRÔLES GÉNÉRAUX -->
+        <div class="resto-controls">
+            <h2>📌 Statut du restaurant</h2>
+            <div class="status-toggle">
+                <span style="font-size: 1.1rem;">Le restaurant est :</span>
+                <div id="restaurantToggle" class="toggle-switch active">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span id="statusLabel" style="font-weight: bold; color: #27ae60;">OUVERT</span>
+            </div>
+            
+            <h2 style="margin-top: 2rem;">📱 Numéro WhatsApp</h2>
+            <div class="phone-input">
+                <input type="text" id="whatsappPhone" placeholder="221771234567" value="2265626261">
+                <button id="savePhoneBtn" class="btn-save">Enregistrer</button>
+            </div>
+        </div>
+        
+        <!-- ÉDITEUR DE MENU -->
+        <div class="menu-editor">
+            <h2 style="margin-bottom: 1.5rem;">🍳 Éditer le menu</h2>
+            
+            <div class="menu-tabs">
+                <button id="tabPlats" class="tab-btn active">Plats</button>
+                <button id="tabBieres" class="tab-btn">Bières</button>
+                <button id="tabSucreries" class="tab-btn">Sucreries</button>
+            </div>
+            
+            <div id="platsEditor" class="menu-items"></div>
+            <div id="bieresEditor" class="menu-items" style="display: none;"></div>
+            <div id="sucreriesEditor" class="menu-items" style="display: none;"></div>
+        </div>
+        
+        <!-- SECTION QR CODES -->
+        <div class="qr-section">
+            <h2 style="margin-bottom: 1rem;">🪑 Gestion des tables</h2>
+            <p style="margin-bottom: 1rem; color: #2c3e50;">
+                Générez des QR codes uniques pour chaque table. 
+                Les clients scanneront et leur numéro de table sera automatiquement transmis.
+            </p>
+            <a href="05-qr-generator.html" target="_blank" class="btn-qr">📱 GÉNÉRER LES QR CODES</a>
+        </div>
+    </div>
+    
+    <script>
+        // ████████████████████████████████████████████████████████████
+        // │                  CONFIGURATION RESTAURANT                │
+        // │            À MODIFIER POUR CHAQUE RESTAURANT            │
+        // ████████████████████████████████████████████████████████████
+        
+        const RESTO_CONFIG = {
+            nom: "Chez eric",              // ← NOM DU RESTAURANT
+            telephone: "2265662626",       // ← NUMÉRO WHATSAPP
+            motDePasse: "resto123",         // ← MOT DE PASSE (à changer)
+            couleur: "#e74c3c"              // ← COULEUR PRINCIPALE
+        };
+        
+        // ████████████████████████████████████████████████████████████
+        // │                    CODE APPLICATION                      │
+        // │              NE RIEN MODIFIER CI-DESSOUS                 │
+        // ████████████████████████████████████████████████████████████
+        
+        // Mettre à jour le titre
+        document.title = `Admin - ${RESTO_CONFIG.nom}`;
+        document.querySelector('.admin-header h1').innerHTML = `⚙️ ${RESTO_CONFIG.nom}`;
+        document.querySelector('.login-container h1').innerHTML = `🍽️ ${RESTO_CONFIG.nom}`;
+        
+        // Menu par défaut (copie du fichier client)
+        const menuData = {
+            plats: [
+                { id: 'p1', nom: "Riz Gras", prix: 2000, disponible: true },
+                { id: 'p2', nom: "Yassa Poulet", prix: 2500, disponible: true },
+                { id: 'p3', nom: "Mafé", prix: 2200, disponible: true },
+                { id: 'p4', nom: "Thiéboudiène", prix: 2800, disponible: true },
+                { id: 'p5', nom: "Poulet Roti", prix: 2300, disponible: true },
+                { id: 'p6', nom: "Lakh", prix: 1500, disponible: true },
+                { id: 'p7', nom: "Thiakry", prix: 1200, disponible: true },
+                { id: 'p8', nom: "Pastels", prix: 1800, disponible: true },
+                { id: 'p9', nom: "Soupe Kandja", prix: 2000, disponible: true },
+                { id: 'p10', nom: "Nems", prix: 1500, disponible: true }
+            ],
+            bieres: [
+                { id: 'b1', nom: "Gazelle", prix: 1000, disponible: true },
+                { id: 'b2', nom: "Flag Spéciale", prix: 1000, disponible: true },
+                { id: 'b3', nom: "MBOUR", prix: 1200, disponible: true },
+                { id: 'b4', nom: "Castel", prix: 1000, disponible: true },
+                { id: 'b5', nom: "Guinness", prix: 1500, disponible: true }
+            ],
+            sucreries: [
+                { id: 's1', nom: "Coca-Cola", prix: 800, disponible: true },
+                { id: 's2', nom: "Fanta", prix: 800, disponible: true },
+                { id: 's3', nom: "Sprite", prix: 800, disponible: true },
+                { id: 's4', nom: "Jus Bissap", prix: 1000, disponible: true },
+                { id: 's5', nom: "Jus Ginger", prix: 1000, disponible: true }
+            ]
+        };
+        
+        // Gestion de la connexion
+        document.getElementById('loginBtn').onclick = function() {
+            const password = document.getElementById('restoPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (password === RESTO_CONFIG.motDePasse) {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('adminPage').style.display = 'block';
+                errorDiv.textContent = '';
+                
+                loadMenuData();
+                displayPlatsEditor();
+                displayBieresEditor();
+                displaySucreriesEditor();
+                
+                // Charger le numéro WhatsApp
+                const savedPhone = localStorage.getItem('expressResto_phone');
+                if (savedPhone) {
+                    document.getElementById('whatsappPhone').value = savedPhone;
+                } else {
+                    document.getElementById('whatsappPhone').value = RESTO_CONFIG.telephone;
+                }
+                
+                // Charger le statut
+                const savedStatus = localStorage.getItem('expressResto_status');
+                const toggle = document.getElementById('restaurantToggle');
+                const statusLabel = document.getElementById('statusLabel');
+                
+                if (savedStatus === 'closed') {
+                    toggle.classList.remove('active');
+                    statusLabel.textContent = 'FERMÉ';
+                    statusLabel.style.color = '#e74c3c';
+                }
+            } else {
+                errorDiv.textContent = '❌ Mot de passe incorrect';
+            }
+        };
+        
+        document.getElementById('logoutBtn').onclick = function() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('adminPage').style.display = 'none';
+            document.getElementById('restoPassword').value = '';
+        };
+        
+        // Gestion du statut
+        const toggle = document.getElementById('restaurantToggle');
+        const statusLabel = document.getElementById('statusLabel');
+        
+        toggle.onclick = function() {
+            this.classList.toggle('active');
+            
+            if (this.classList.contains('active')) {
+                statusLabel.textContent = 'OUVERT';
+                statusLabel.style.color = '#27ae60';
+                localStorage.setItem('expressResto_status', 'open');
+            } else {
+                statusLabel.textContent = 'FERMÉ';
+                statusLabel.style.color = '#e74c3c';
+                localStorage.setItem('expressResto_status', 'closed');
+            }
+            
+            alert('✅ Statut mis à jour !');
+        };
+        
+        // Gestion du numéro WhatsApp
+        document.getElementById('savePhoneBtn').onclick = function() {
+            const phone = document.getElementById('whatsappPhone').value;
+            localStorage.setItem('expressResto_phone', phone);
+            alert('✅ Numéro WhatsApp enregistré !');
+        };
+        
+        // Chargement des données
+        function loadMenuData() {
+            const savedMenu = localStorage.getItem('expressResto_menu');
+            if (savedMenu) {
+                const saved = JSON.parse(savedMenu);
+                
+                saved.plats?.forEach(savedPlat => {
+                    const plat = menuData.plats.find(p => p.id === savedPlat.id);
+                    if (plat) {
+                        plat.prix = savedPlat.prix;
+                        plat.disponible = savedPlat.disponible;
+                    }
+                });
+                
+                saved.bieres?.forEach(savedBiere => {
+                    const biere = menuData.bieres.find(b => b.id === savedBiere.id);
+                    if (biere) {
+                        biere.prix = savedBiere.prix;
+                        biere.disponible = savedBiere.disponible;
+                    }
+                });
+                
+                saved.sucreries?.forEach(savedSucrerie => {
+                    const sucrerie = menuData.sucreries.find(s => s.id === savedSucrerie.id);
+                    if (sucrerie) {
+                        sucrerie.prix = savedSucrerie.prix;
+                        sucrerie.disponible = savedSucrerie.disponible;
+                    }
+                });
+            }
+        }
+        
+        function saveMenuData() {
+            const dataToSave = {
+                plats: menuData.plats.map(p => ({ id: p.id, prix: p.prix, disponible: p.disponible })),
+                bieres: menuData.bieres.map(b => ({ id: b.id, prix: b.prix, disponible: b.disponible })),
+                sucreries: menuData.sucreries.map(s => ({ id: s.id, prix: s.prix, disponible: s.disponible }))
+            };
+            
+            localStorage.setItem('expressResto_menu', JSON.stringify(dataToSave));
+            alert('✅ Menu mis à jour !');
+        }
+        
+        function displayPlatsEditor() {
+            const container = document.getElementById('platsEditor');
+            container.innerHTML = menuData.plats.map(plat => `
+                <div class="menu-item-card">
+                    <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400" class="menu-item-image">
+                    <div class="menu-item-info">
+                        <div class="menu-item-name">${plat.nom}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>Prix:</span>
+                            <input type="number" id="prix_${plat.id}" value="${plat.prix}" class="price-input" min="0" step="100">
+                            <span>FCFA</span>
+                        </div>
+                        <div class="availability-toggle">
+                            <input type="checkbox" id="disp_${plat.id}" ${plat.disponible ? 'checked' : ''}>
+                            <label for="disp_${plat.id}">Disponible</label>
+                        </div>
+                        <button onclick="updateItem('${plat.id}', 'plat')" class="btn-update">Mettre à jour</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayBieresEditor() {
+            const container = document.getElementById('bieresEditor');
+            container.innerHTML = menuData.bieres.map(biere => `
+                <div class="menu-item-card">
+                    <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400" class="menu-item-image">
+                    <div class="menu-item-info">
+                        <div class="menu-item-name">${biere.nom}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>Prix:</span>
+                            <input type="number" id="prix_${biere.id}" value="${biere.prix}" class="price-input" min="0" step="100">
+                            <span>FCFA</span>
+                        </div>
+                        <div class="availability-toggle">
+                            <input type="checkbox" id="disp_${biere.id}" ${biere.disponible ? 'checked' : ''}>
+                            <label for="disp_${biere.id}">Disponible</label>
+                        </div>
+                        <button onclick="updateItem('${biere.id}', 'biere')" class="btn-update">Mettre à jour</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displaySucreriesEditor() {
+            const container = document.getElementById('sucreriesEditor');
+            container.innerHTML = menuData.sucreries.map(sucrerie => `
+                <div class="menu-item-card">
+                    <img src="https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400" class="menu-item-image">
+                    <div class="menu-item-info">
+                        <div class="menu-item-name">${sucrerie.nom}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>Prix:</span>
+                            <input type="number" id="prix_${sucrerie.id}" value="${sucrerie.prix}" class="price-input" min="0" step="100">
+                            <span>FCFA</span>
+                        </div>
+                        <div class="availability-toggle">
+                            <input type="checkbox" id="disp_${sucrerie.id}" ${sucrerie.disponible ? 'checked' : ''}>
+                            <label for="disp_${sucrerie.id}">Disponible</label>
+                        </div>
+                        <button onclick="updateItem('${sucrerie.id}', 'sucrerie')" class="btn-update">Mettre à jour</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        window.updateItem = function(id, type) {
+            const newPrice = parseInt(document.getElementById(`prix_${id}`).value);
+            const isAvailable = document.getElementById(`disp_${id}`).checked;
+            
+            let item;
+            if (type === 'plat') item = menuData.plats.find(p => p.id === id);
+            else if (type === 'biere') item = menuData.bieres.find(b => b.id === id);
+            else item = menuData.sucreries.find(s => s.id === id);
+            
+            if (item) {
+                item.prix = newPrice;
+                item.disponible = isAvailable;
+                saveMenuData();
+            }
+        };
+        
+        // Gestion des onglets
+        document.getElementById('tabPlats').onclick = function() {
+            document.getElementById('platsEditor').style.display = 'grid';
+            document.getElementById('bieresEditor').style.display = 'none';
+            document.getElementById('sucreriesEditor').style.display = 'none';
+            
+            this.classList.add('active');
+            document.getElementById('tabBieres').classList.remove('active');
+            document.getElementById('tabSucreries').classList.remove('active');
+        };
+        
+        document.getElementById('tabBieres').onclick = function() {
+            document.getElementById('platsEditor').style.display = 'none';
+            document.getElementById('bieresEditor').style.display = 'grid';
+            document.getElementById('sucreriesEditor').style.display = 'none';
+            
+            this.classList.add('active');
+            document.getElementById('tabPlats').classList.remove('active');
+            document.getElementById('tabSucreries').classList.remove('active');
+        };
+        
+        document.getElementById('tabSucreries').onclick = function() {
+            document.getElementById('platsEditor').style.display = 'none';
+            document.getElementById('bieresEditor').style.display = 'none';
+            document.getElementById('sucreriesEditor').style.display = 'grid';
+            
+            this.classList.add('active');
+            document.getElementById('tabPlats').classList.remove('active');
+            document.getElementById('tabBieres').classList.remove('active');
+        };
+    </script>
+</body>
+</html>

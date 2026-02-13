@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+
+# Redirections pour les URLs de type /table1, /table2, etc.
+[[redirects]]
+  from = "/table:number"
+  to = "/?table=:number"
+  status = 200
+
+[[redirects]]
+  from = "/t:number"
+  to = "/?table=:number"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=0, must-revalidate"

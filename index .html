@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Express Resto - Table [NUMERO]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f8f9fa;
+            padding-bottom: 2rem;
+        }
+        
+        /* Bannière table */
+        .table-banner {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .table-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: white;
+            color: #e74c3c;
+            display: inline-block;
+            padding: 0.5rem 2rem;
+            border-radius: 50px;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        .resto-header {
+            background: white;
+            color: #2c3e50;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+        }
+        
+        .resto-status {
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status-open {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        
+        .status-closed {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .menu-section {
+            margin: 2rem 1rem;
+        }
+        
+        .menu-section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            padding: 1.2rem;
+        }
+        
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-desc {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 0.5rem 0;
+        }
+        
+        .product-unavailable {
+            background: #ecf0f1;
+            color: #95a5a6;
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 0.8rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover:not(:disabled) {
+            background: #2980b9;
+        }
+        
+        .btn-add:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .badge-unavailable {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .cart {
+            background: white;
+            margin: 2rem 1rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 5px solid #e74c3c;
+        }
+        
+        .cart h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .cart-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .cart-item-name {
+            font-weight: 500;
+        }
+        
+        .cart-item-price {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            padding-top: 1rem;
+            border-top: 2px solid #2c3e50;
+        }
+        
+        .special-request {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            margin: 1rem 0;
+            resize: vertical;
+            font-size: 1rem;
+        }
+        
+        .btn-whatsapp {
+            width: 100%;
+            padding: 1rem;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-whatsapp:hover:not(:disabled) {
+            background: #128C7E;
+        }
+        
+        .btn-whatsapp:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .table-info {
+            background: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 5px solid #ffc107;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Bannière avec numéro de table -->
+    <div class="table-banner">
+        <h2>🍽️ EXPRESS RESTO</h2>
+        <div id="tableNumberDisplay" class="table-number">TABLE 1</div>
+        <p style="margin-top: 0.5rem;">Scannez votre table pour commander</p>
+    </div>
+    
+    <!-- Statut du restaurant -->
+    <div id="restoStatus" class="resto-status status-open">
+        ✅ Le restaurant est ouvert - Commandes acceptées
+    </div>
+    
+    <!-- Info table -->
+    <div id="tableInfo" class="table-info">
+        🪑 Vous êtes à la table <span id="tableNumberSpan">1</span> - Votre commande sera livrée à cette table
+    </div>
+    
+    <!-- MENU PRINCIPAL -->
+    <main>
+        <section class="menu-section">
+            <h2>🍛 PLATS PRINCIPAUX</h2>
+            <div id="platsGrid" class="products-grid"></div>
+        </section>
+        
+        <section class="menu-section">
+            <h2>🍺 BIÈRES</h2>
+            <div id="bieresGrid" class="products-grid"></div>
+        </section>
+        
+        <section class="menu-section">
+            <h2>🥤 SUCRERIES & JUS</h2>
+            <div id="sucreriesGrid" class="products-grid"></div>
+        </section>
+        
+        <section class="cart">
+            <h2>🛒 VOTRE COMMANDE</h2>
+            <div id="cartItems" class="cart-items">
+                <p style="text-align: center; color: #7f8c8d;">Votre panier est vide</p>
+            </div>
+            
+            <div class="cart-total">
+                <span>TOTAL</span>
+                <span id="cartTotal">0 FCFA</span>
+            </div>
+            
+            <textarea id="specialRequest" class="special-request" placeholder="📝 Demande spéciale (cuisson, allergènes, couverts...)" rows="3"></textarea>
+            
+            <button id="orderBtn" class="btn-whatsapp">📲 COMMANDER SUR WHATSAPP</button>
+        </section>
+    </main>
+    
+    <script>
+        // ===========================================
+        // RÉCUPÉRATION DU NUMÉRO DE TABLE DEPUIS L'URL
+        // ===========================================
+        function getTableNumber() {
+            // Exemple d'URL: https://site.com/?table=5
+            // ou https://site.com/table5.html
+            // ou https://site.com/5 (via redirection)
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            let tableNumber = urlParams.get('table');
+            
+            // Si pas de paramètre table, chercher dans le path
+            if (!tableNumber) {
+                const path = window.location.pathname;
+                const match = path.match(/table(\d+)/i) || path.match(/\/(\d+)(\.html)?$/);
+                if (match) {
+                    tableNumber = match[1];
+                }
+            }
+            
+            // Si toujours pas de table, demander ou mettre par défaut
+            if (!tableNumber) {
+                tableNumber = prompt("Entrez votre numéro de table:", "1");
+                if (!tableNumber) tableNumber = "1";
+            }
+            
+            return tableNumber;
+        }
+        
+        // ===========================================
+        // DONNÉES DU MENU
+        // ===========================================
+        const menuData = {
+            plats: [
+                { id: 'p1', nom: "Riz Gras", description: "Riz gras sénégalais au djepdjen, légumes, viande", prix: 2000, image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400", disponible: true },
+                { id: 'p2', nom: "Yassa Poulet", description: "Poulet mariné au citron, oignons confits, riz blanc", prix: 2500, image: "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?w=400", disponible: true },
+                { id: 'p3', nom: "Mafé", description: "Ragoût de viande sauce arachide, riz", prix: 2200, image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400", disponible: true },
+                { id: 'p4', nom: "Thiéboudiène", description: "Poisson, riz au poisson, légumes", prix: 2800, image: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=400", disponible: true },
+                { id: 'p5', nom: "Poulet Roti", description: "Poulet roti, frites, salade", prix: 2300, image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400", disponible: true },
+                { id: 'p6', nom: "Lakh", description: "Dessert lait caillé, couscous, fruits", prix: 1500, image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400", disponible: true },
+                { id: 'p7', nom: "Thiakry", description: "Couscous au lait caillé, vanille", prix: 1200, image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400", disponible: true },
+                { id: 'p8', nom: "Pastels", description: "Beignets farcis au poisson, sauce", prix: 1800, image: "https://images.unsplash.com/photo-1604467715878-83e57e8bc129?w=400", disponible: true },
+                { id: 'p9', nom: "Soupe Kandja", description: "Soupe de gombo, viande, poisson", prix: 2000, image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=400", disponible: true },
+                { id: 'p10', nom: "Nems", description: "Nems poulet, sauce nuoc-mam", prix: 1500, image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400", disponible: true }
+            ],
+            bieres: [
+                { id: 'b1', nom: "Gazelle", description: "Bière blonde légère", prix: 1000, image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400", disponible: true },
+                { id: 'b2', nom: "Flag Spéciale", description: "Bière blonde", prix: 1000, image: "https://images.unsplash.com/photo-1586993451228-09818021e309?w=400", disponible: true },
+                { id: 'b3', nom: "MBOUR", description: "Bière sénégalaise", prix: 1200, image: "https://images.unsplash.com/photo-1618885472179-5e474019f2a9?w=400", disponible: true },
+                { id: 'b4', nom: "Castel", description: "Bière blonde", prix: 1000, image: "https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400", disponible: true },
+                { id: 'b5', nom: "Guinness", description: "Bière brune", prix: 1500, image: "https://images.unsplash.com/photo-1618885472179-5e474019f2a9?w=400", disponible: true }
+            ],
+            sucreries: [
+                { id: 's1', nom: "Coca-Cola", description: "Soda cola", prix: 800, image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400", disponible: true },
+                { id: 's2', nom: "Fanta", description: "Soda orange", prix: 800, image: "https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=400", disponible: true },
+                { id: 's3', nom: "Sprite", description: "Soda citron", prix: 800, image: "https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400", disponible: true },
+                { id: 's4', nom: "Jus Bissap", description: "Jus d'hibiscus", prix: 1000, image: "https://images.unsplash.com/photo-1546173152-94bdf86c28b5?w=400", disponible: true },
+                { id: 's5', nom: "Jus Ginger", description: "Jus de gingembre", prix: 1000, image: "https://images.unsplash.com/photo-1546173152-94bdf86c28b5?w=400", disponible: true }
+            ]
+        };
+        
+        // ===========================================
+        // ÉTAT DE L'APPLICATION
+        // ===========================================
+        let cart = [];
+        let restaurantOpen = true;
+        let gerantPhone = "221771234567";
+        let tableNumber = "1";
+        
+        // ===========================================
+        // INITIALISATION
+        // ===========================================
+        function init() {
+            // Récupérer le numéro de table
+            tableNumber = getTableNumber();
+            
+            // Afficher le numéro de table partout
+            document.getElementById('tableNumberDisplay').textContent = `TABLE ${tableNumber}`;
+            document.getElementById('tableNumberSpan').textContent = tableNumber;
+            
+            // Mettre à jour le titre de la page
+            document.title = `Express Resto - Table ${tableNumber}`;
+            
+            // Charger les données
+            loadSavedData();
+            displayMenu();
+            updateCart();
+            
+            // Événement du bouton commander
+            document.getElementById('orderBtn').onclick = sendWhatsApp;
+            
+            // Vérifier le statut toutes les 5 secondes
+            setInterval(() => {
+                const savedStatus = localStorage.getItem('expressResto_status');
+                if (savedStatus) {
+                    const newStatus = savedStatus === 'open';
+                    if (newStatus !== restaurantOpen) {
+                        restaurantOpen = newStatus;
+                        updateRestaurantStatus();
+                    }
+                }
+            }, 5000);
+        }
+        
+        // ===========================================
+        // CHARGEMENT DES DONNÉES
+        // ===========================================
+        function loadSavedData() {
+            // Charger le menu
+            const savedMenu = localStorage.getItem('expressResto_menu');
+            if (savedMenu) {
+                const saved = JSON.parse(savedMenu);
+                
+                saved.plats?.forEach(savedPlat => {
+                    const plat = menuData.plats.find(p => p.id === savedPlat.id);
+                    if (plat) {
+                        plat.prix = savedPlat.prix;
+                        plat.disponible = savedPlat.disponible;
+                    }
+                });
+                
+                saved.bieres?.forEach(savedBiere => {
+                    const biere = menuData.bieres.find(b => b.id === savedBiere.id);
+                    if (biere) {
+                        biere.prix = savedBiere.prix;
+                        biere.disponible = savedBiere.disponible;
+                    }
+                });
+                
+                saved.sucreries?.forEach(savedSucrerie => {
+                    const sucrerie = menuData.sucreries.find(s => s.id === savedSucrerie.id);
+                    if (sucrerie) {
+                        sucrerie.prix = savedSucrerie.prix;
+                        sucrerie.disponible = savedSucrerie.disponible;
+                    }
+                });
+            }
+            
+            // Charger le statut
+            const savedStatus = localStorage.getItem('expressResto_status');
+            if (savedStatus) {
+                restaurantOpen = savedStatus === 'open';
+                updateRestaurantStatus();
+            }
+            
+            // Charger le numéro WhatsApp
+            const savedPhone = localStorage.getItem('expressResto_phone');
+            if (savedPhone) {
+                gerantPhone = savedPhone;
+            }
+        }
+        
+        // ===========================================
+        // AFFICHAGE DU MENU
+        // ===========================================
+        function displayMenu() {
+            const platsGrid = document.getElementById('platsGrid');
+            platsGrid.innerHTML = menuData.plats.map(plat => `
+                <div class="product-card">
+                    ${!plat.disponible ? '<div class="badge-unavailable">❌ INDISPONIBLE</div>' : ''}
+                    <img src="${plat.image}" alt="${plat.nom}" class="product-image" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-name">${plat.nom}</div>
+                        <div class="product-desc">${plat.description}</div>
+                        <div class="product-price">${plat.prix} FCFA</div>
+                        ${plat.disponible 
+                            ? `<button onclick="addToCart('${plat.id}', 'plat')" class="btn-add">➕ Ajouter</button>`
+                            : `<div class="product-unavailable">Indisponible</div>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+            
+            const bieresGrid = document.getElementById('bieresGrid');
+            bieresGrid.innerHTML = menuData.bieres.map(biere => `
+                <div class="product-card">
+                    ${!biere.disponible ? '<div class="badge-unavailable">❌ INDISPONIBLE</div>' : ''}
+                    <img src="${biere.image}" alt="${biere.nom}" class="product-image" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-name">${biere.nom}</div>
+                        <div class="product-desc">${biere.description}</div>
+                        <div class="product-price">${biere.prix} FCFA</div>
+                        ${biere.disponible 
+                            ? `<button onclick="addToCart('${biere.id}', 'biere')" class="btn-add">➕ Ajouter</button>`
+                            : `<div class="product-unavailable">Indisponible</div>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+            
+            const sucreriesGrid = document.getElementById('sucreriesGrid');
+            sucreriesGrid.innerHTML = menuData.sucreries.map(sucrerie => `
+                <div class="product-card">
+                    ${!sucrerie.disponible ? '<div class="badge-unavailable">❌ INDISPONIBLE</div>' : ''}
+                    <img src="${sucrerie.image}" alt="${sucrerie.nom}" class="product-image" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-name">${sucrerie.nom}</div>
+                        <div class="product-desc">${sucrerie.description}</div>
+                        <div class="product-price">${sucrerie.prix} FCFA</div>
+                        ${sucrerie.disponible 
+                            ? `<button onclick="addToCart('${sucrerie.id}', 'sucrerie')" class="btn-add">➕ Ajouter</button>`
+                            : `<div class="product-unavailable">Indisponible</div>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ===========================================
+        // PANIER
+        // ===========================================
+        window.addToCart = function(id, type) {
+            if (!restaurantOpen) {
+                alert('❌ Le restaurant est fermé');
+                return;
+            }
+            
+            let item;
+            if (type === 'plat') item = menuData.plats.find(p => p.id === id);
+            else if (type === 'biere') item = menuData.bieres.find(b => b.id === id);
+            else item = menuData.sucreries.find(s => s.id === id);
+            
+            if (!item.disponible) {
+                alert('❌ Ce produit est indisponible');
+                return;
+            }
+            
+            const existingItem = cart.find(i => i.id === id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ 
+                    id: item.id, 
+                    nom: item.nom, 
+                    prix: item.prix, 
+                    quantity: 1,
+                    type 
+                });
+            }
+            
+            updateCart();
+        };
+        
+        window.removeFromCart = function(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+        };
+        
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Votre panier est vide</p>';
+                cartTotal.textContent = '0 FCFA';
+                return;
+            }
+            
+            let total = 0;
+            cartItems.innerHTML = cart.map(item => {
+                const itemTotal = item.prix * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="cart-item">
+                        <div>
+                            <span class="cart-item-name">${item.nom}</span>
+                            <span style="color: #7f8c8d; margin-left: 0.5rem;">x${item.quantity}</span>
+                        </div>
+                        <div>
+                            <span class="cart-item-price">${itemTotal} FCFA</span>
+                            <button onclick="removeFromCart('${item.id}')" class="btn-remove">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            cartTotal.textContent = `${total} FCFA`;
+        }
+        
+        // ===========================================
+        // ENVOI WHATSAPP AVEC NUMÉRO DE TABLE
+        // ===========================================
+        function sendWhatsApp() {
+            if (cart.length === 0) {
+                alert('❌ Votre panier est vide');
+                return;
+            }
+            
+            if (!restaurantOpen) {
+                alert('❌ Le restaurant est fermé');
+                return;
+            }
+            
+            // Calcul du total
+            let total = 0;
+            cart.forEach(item => {
+                total += item.prix * item.quantity;
+            });
+            
+            // Construction du message AVEC NUMÉRO DE TABLE
+            let message = '*🍽️ EXPRESS RESTO - NOUVELLE COMMANDE*%0A%0A';
+            message += `*🪑 TABLE N°${tableNumber}*%0A`; // <-- NUMÉRO DE TABLE ICI
+            message += '─────────────────%0A%0A';
+            message += '*📋 DÉTAIL DE LA COMMANDE :*%0A';
+            
+            cart.forEach(item => {
+                const itemTotal = item.prix * item.quantity;
+                message += `• ${item.nom} x${item.quantity} : ${itemTotal} FCFA%0A`;
+            });
+            
+            message += '%0A─────────────────%0A';
+            message += `*💰 TOTAL : ${total} FCFA*%0A%0A`;
+            
+            const specialRequest = document.getElementById('specialRequest').value;
+            if (specialRequest) {
+                message += `*📝 DEMANDE SPÉCIALE :*%0A${specialRequest}%0A%0A`;
+            }
+            
+            message += `*⏰ ${new Date().toLocaleString('fr-FR')}*%0A`;
+            message += `*📍 TABLE ${tableNumber}*%0A%0A`; // <-- RAPPEL TABLE
+            message += '_Merci de votre commande !_';
+            
+            // Ouvrir WhatsApp
+            window.open(`https://wa.me/${gerantPhone}?text=${message}`, '_blank');
+        }
+        
+        // ===========================================
+        // STATUT RESTAURANT
+        // ===========================================
+        function updateRestaurantStatus() {
+            const statusDiv = document.getElementById('restoStatus');
+            const orderBtn = document.getElementById('orderBtn');
+            
+            if (restaurantOpen) {
+                statusDiv.className = 'resto-status status-open';
+                statusDiv.innerHTML = '✅ Le restaurant est OUVERT - Commandes acceptées';
+                orderBtn.disabled = false;
+            } else {
+                statusDiv.className = 'resto-status status-closed';
+                statusDiv.innerHTML = '❌ Le restaurant est FERMÉ - Réouverture bientôt';
+                orderBtn.disabled = true;
+            }
+        }
+        
+        // ===========================================
+        // DÉMARRAGE
+        // ===========================================
+        window.onload = init;
+    </script>
+</body>
+</html>

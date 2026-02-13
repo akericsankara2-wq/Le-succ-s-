@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Développeur - Express Resto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #1a1a2e;
+            padding: 2rem;
+            color: white;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: #16213e;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .dev-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
+        
+        .dev-header {
+            background: #0f3460;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-logout {
+            padding: 0.5rem 1rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #16213e;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 5px solid #e94560;
+        }
+        
+        .restaurant-list {
+            background: #16213e;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+        
+        .restaurant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #1a1a2e;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .status-active {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status-inactive {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-toggle {
+            padding: 0.5rem 1rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-toggle.active {
+            background: #4caf50;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #0f3460;
+            border-radius: 5px;
+            margin: 1rem 0;
+            font-size: 1rem;
+            background: #16213e;
+            color: white;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        
+        .error-message {
+            color: #e94560;
+            margin: 1rem 0;
+        }
+        
+        .reset-btn {
+            background: #f44336;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE DE CONNEXION DÉVELOPPEUR -->
+    <div id="devLoginPage" class="login-container">
+        <h1 style="color: #e94560; margin-bottom: 1rem;">⚙️ EXPRESS RESTO</h1>
+        <h2 style="margin-bottom: 2rem;">Espace Développeur</h2>
+        <input type="password" id="devPassword" class="password-input" placeholder="Mot de passe développeur" autofocus>
+        <button id="devLoginBtn" class="btn-login">Connexion</button>
+        <div id="devLoginError" class="error-message"></div>
+        <p style="margin-top: 2rem; color: #7f8c8d; font-size: 0.9rem;">
+            Mot de passe par défaut : <strong>dev123</strong>
+        </p>
+    </div>
+    
+    <!-- INTERFACE ADMIN DÉVELOPPEUR -->
+    <div id="devAdminPage" class="dev-container">
+        <div class="dev-header">
+            <div>
+                <h1>⚡ Administration Développeur</h1>
+                <p style="opacity: 0.9;">Gestion globale des restaurants</p>
+            </div>
+            <button id="devLogoutBtn" class="btn-logout">Déconnexion</button>
+        </div>
+        
+        <!-- STATISTIQUES GLOBALES -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>📊 Restaurants actifs</h3>
+                <div style="font-size: 2.5rem; font-weight: bold; margin: 1rem 0;" id="activeRestoCount">1</div>
+                <p style="color: #7f8c8d;">sur 1 restaurant(s) configuré(s)</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🔄 Actions rapides</h3>
+                <button id="resetAllBtn" class="btn-toggle" style="width: 100%; margin-top: 1rem;">🔄 Réinitialiser tout</button>
+                <button id="activateAllBtn" class="btn-toggle active" style="width: 100%; margin-top: 0.5rem;">✅ Activer tous</button>
+                <button id="deactivateAllBtn" class="btn-toggle" style="width: 100%; margin-top: 0.5rem;">❌ Désactiver tous</button>
+            </div>
+        </div>
+        
+        <!-- LISTE DES RESTAURANTS -->
+        <div class="restaurant-list">
+            <h2 style="margin-bottom: 1.5rem;">🏪 Restaurants enregistrés</h2>
+            
+            <div id="restaurantsContainer">
+                <!-- Restaurant 1 (par défaut) -->
+                <div class="restaurant-item">
+                    <div>
+                        <h3 style="margin-bottom: 0.3rem;">Express Resto Principal</h3>
+                        <p style="color: #7f8c8d;">ID: resto_001 | Créé le 12/02/2026</p>
+                        <span id="restoGlobalStatus" class="status-badge status-active">ACTIF</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="toggleGlobalResto" class="btn-toggle active">Désactiver</button>
+                        <button id="resetRestoBtn" class="btn-toggle reset-btn">Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: #7f8c8d; margin-top: 1rem; font-style: italic;">
+                ℹ️ Pour ajouter plusieurs restaurants, contactez le développeur pour une version multi-restaurants.
+            </p>
+        </div>
+        
+        <!-- CONFIGURATION SYSTÈME -->
+        <div class="restaurant-list" style="margin-top: 1.5rem;">
+            <h2 style="margin-bottom: 1.5rem;">🔐 Configuration</h2>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Mot de passe restaurant actuel :</label>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="currentRestoPassword" value="resto123" readonly style="flex: 1; padding: 0.8rem; background: #1a1a2e; border: 1px solid #0f3460; color: white; border-radius: 5px;">
+                    <button id="changeRestoPasswordBtn" class="btn-toggle">Modifier</button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Mot de passe développeur actuel :</label>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="currentDevPassword" value="dev123" readonly style="flex: 1; padding: 0.8rem; background: #1a1a2e; border: 1px solid #0f3460; color: white; border-radius: 5px;">
+                    <button id="changeDevPasswordBtn" class="btn-toggle">Modifier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ===========================================
+        // MOT DE PASSE DÉVELOPPEUR (À CHANGER)
+        // ===========================================
+        let DEV_PASSWORD = "dev123";
+        let RESTO_PASSWORD = "resto123";
+        
+        // ===========================================
+        // ÉTAT GLOBAL
+        // ===========================================
+        let isSystemActive = true;
+        
+        // ===========================================
+        // CONNEXION DÉVELOPPEUR
+        // ===========================================
+        document.getElementById('devLoginBtn').onclick = function() {
+            const password = document.getElementById('devPassword').value;
+            const errorDiv = document.getElementById('devLoginError');
+            
+            if (password === DEV_PASSWORD) {
+                document.getElementById('devLoginPage').style.display = 'none';
+                document.getElementById('devAdminPage').style.display = 'block';
+                errorDiv.textContent = '';
+                
+                // Charger l'état du système
+                loadSystemStatus();
+                updateStats();
+            } else {
+                errorDiv.textContent = '❌ Mot de passe développeur incorrect';
+            }
+        };
+        
+        document.getElementById('devLogoutBtn').onclick = function() {
+            document.getElementById('devLoginPage').style.display = 'block';
+            document.getElementById('devAdminPage').style.display = 'none';
+            document.getElementById('devPassword').value = '';
+        };
+        
+        // ===========================================
+        // CHARGEMENT ÉTAT SYSTÈME
+        // ===========================================
+        function loadSystemStatus() {
+            const savedStatus = localStorage.getItem('expressResto_status');
+            isSystemActive = savedStatus !== 'closed'; // Si fermé, on considère inactif
+            
+            const toggleBtn = document.getElementById('toggleGlobalResto');
+            const statusBadge = document.getElementById('restoGlobalStatus');
+            
+            if (isSystemActive) {
+                toggleBtn.textContent = 'Désactiver';
+                toggleBtn.classList.add('active');
+                statusBadge.textContent = 'ACTIF';
+                statusBadge.className = 'status-badge status-active';
+            } else {
+                toggleBtn.textContent = 'Activer';
+                toggleBtn.classList.remove('active');
+                statusBadge.textContent = 'INACTIF';
+                statusBadge.className = 'status-badge status-inactive';
+            }
+        }
+        
+        // ===========================================
+        // STATISTIQUES
+        // ===========================================
+        function updateStats() {
+            const status = localStorage.getItem('expressResto_status');
+            const isActive = status !== 'closed';
+            document.getElementById('activeRestoCount').textContent = isActive ? '1' : '0';
+        }
+        
+        // ===========================================
+        // ACTIONS GLOBALES
+        // ===========================================
+        document.getElementById('toggleGlobalResto').onclick = function() {
+            if (isSystemActive) {
+                // Désactiver
+                localStorage.setItem('expressResto_status', 'closed');
+                this.textContent = 'Activer';
+                this.classList.remove('active');
+                document.getElementById('restoGlobalStatus').textContent = 'INACTIF';
+                document.getElementById('restoGlobalStatus').className = 'status-badge status-inactive';
+                isSystemActive = false;
+                alert('❌ Restaurant désactivé - Les commandes ne sont plus possibles');
+            } else {
+                // Activer
+                localStorage.setItem('expressResto_status', 'open');
+                this.textContent = 'Désactiver';
+                this.classList.add('active');
+                document.getElementById('restoGlobalStatus').textContent = 'ACTIF';
+                document.getElementById('restoGlobalStatus').className = 'status-badge status-active';
+                isSystemActive = true;
+                alert('✅ Restaurant activé - Les commandes sont possibles');
+            }
+            updateStats();
+        };
+        
+        // ===========================================
+        // RÉINITIALISATION
+        // ===========================================
+        document.getElementById('resetAllBtn').onclick = function() {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir TOUT réinitialiser ? Toutes les données (prix, disponibilités, statut) seront perdues.')) {
+                // Réinitialiser le menu
+                const defaultMenu = {
+                    plats: [
+                        { id: 'p1', prix: 2000, disponible: true },
+                        { id: 'p2', prix: 2500, disponible: true },
+                        { id: 'p3', prix: 2200, disponible: true },
+                        { id: 'p4', prix: 2800, disponible: true },
+                        { id: 'p5', prix: 2300, disponible: true },
+                        { id: 'p6', prix: 1500, disponible: true },
+                        { id: 'p7', prix: 1200, disponible: true },
+                        { id: 'p8', prix: 1800, disponible: true },
+                        { id: 'p9', prix: 2000, disponible: true },
+                        { id: 'p10', prix: 1500, disponible: true }
+                    ],
+                    bieres: [
+                        { id: 'b1', prix: 1000, disponible: true },
+                        { id: 'b2', prix: 1000, disponible: true },
+                        { id: 'b3', prix: 1200, disponible: true },
+                        { id: 'b4', prix: 1000, disponible: true },
+                        { id: 'b5', prix: 1500, disponible: true }
+                    ],
+                    sucreries: [
+                        { id: 's1', prix: 800, disponible: true },
+                        { id: 's2', prix: 800, disponible: true },
+                        { id: 's3', prix: 800, disponible: true },
+                        { id: 's4', prix: 1000, disponible: true },
+                        { id: 's5', prix: 1000, disponible: true }
+                    ]
+                };
+                
+                localStorage.setItem('expressResto_menu', JSON.stringify(defaultMenu));
+                localStorage.setItem('expressResto_status', 'open');
+                localStorage.setItem('expressResto_phone', '221771234567');
+                
+                alert('✅ Système réinitialisé avec succès !');
+                loadSystemStatus();
+                updateStats();
+            }
+        };
+        
+        document.getElementById('activateAllBtn').onclick = function() {
+            localStorage.setItem('expressResto_status', 'open');
+            loadSystemStatus();
+            updateStats();
+            alert('✅ Restaurant activé');
+        };
+        
+        document.getElementById('deactivateAllBtn').onclick = function() {
+            localStorage.setItem('expressResto_status', 'closed');
+            loadSystemStatus();
+            updateStats();
+            alert('❌ Restaurant désactivé');
+        };
+        
+        document.getElementById('resetRestoBtn').onclick = function() {
+            if (confirm('⚠️ Réinitialiser le menu ? Tous les prix modifiés seront perdus.')) {
+                const defaultMenu = {
+                    plats: [
+                        { id: 'p1', prix: 2000, disponible: true },
+                        { id: 'p2', prix: 2500, disponible: true },
+                        { id: 'p3', prix: 2200, disponible: true },
+                        { id: 'p4', prix: 2800, disponible: true },
+                        { id: 'p5', prix: 2300, disponible: true },
+                        { id: 'p6', prix: 1500, disponible: true },
+                        { id: 'p7', prix: 1200, disponible: true },
+                        { id: 'p8', prix: 1800, disponible: true },
+                        { id: 'p9', prix: 2000, disponible: true },
+                        { id: 'p10', prix: 1500, disponible: true }
+                    ],
+                    bieres: [
+                        { id: 'b1', prix: 1000, disponible: true },
+                        { id: 'b2', prix: 1000, disponible: true },
+                        { id: 'b3', prix: 1200, disponible: true },
+                        { id: 'b4', prix: 1000, disponible: true },
+                        { id: 'b5', prix: 1500, disponible: true }
+                    ],
+                    sucreries: [
+                        { id: 's1', prix: 800, disponible: true },
+                        { id: 's2', prix: 800, disponible: true },
+                        { id: 's3', prix: 800, disponible: true },
+                        { id: 's4', prix: 1000, disponible: true },
+                        { id: 's5', prix: 1000, disponible: true }
+                    ]
+                };
+                
+                localStorage.setItem('expressResto_menu', JSON.stringify(defaultMenu));
+                alert('✅ Menu réinitialisé');
+            }
+        };
+        
+        // ===========================================
+        // CHANGEMENT MOTS DE PASSE
+        // ===========================================
+        document.getElementById('changeRestoPasswordBtn').onclick = function() {
+            const newPassword = prompt('Entrez le nouveau mot de passe pour le restaurant :', RESTO_PASSWORD);
+            if (newPassword && newPassword.trim() !== '') {
+                RESTO_PASSWORD = newPassword.trim();
+                document.getElementById('currentRestoPassword').value = RESTO_PASSWORD;
+                
+                // Sauvegarder dans localStorage pour persistance
+                localStorage.setItem('expressResto_resto_password', RESTO_PASSWORD);
+                
+                alert('✅ Mot de passe restaurant modifié !\nNouveau mot de passe : ' + RESTO_PASSWORD);
+            }
+        };
+        
+        document.getElementById('changeDevPasswordBtn').onclick = function() {
+            const newPassword = prompt('Entrez le nouveau mot de passe développeur :', DEV_PASSWORD);
+            if (newPassword && newPassword.trim() !== '') {
+                DEV_PASSWORD = newPassword.trim();
+                document.getElementById('currentDevPassword').value = DEV_PASSWORD;
+                
+                // Sauvegarder dans localStorage pour persistance
+                localStorage.setItem('expressResto_dev_password', DEV_PASSWORD);
+                
+                alert('✅ Mot de passe développeur modifié !\nNouveau mot de passe : ' + DEV_PASSWORD);
+            }
+        };
+        
+        // ===========================================
+        // CHARGEMENT DES MOTS DE PASSE SAUVEGARDÉS
+        // ===========================================
+        function loadPasswords() {
+            const savedRestoPass = localStorage.getItem('expressResto_resto_password');
+            if (savedRestoPass) {
+                RESTO_PASSWORD = savedRestoPass;
+                document.getElementById('currentRestoPassword').value = RESTO_PASSWORD;
+            }
+            
+            const savedDevPass = localStorage.getItem('expressResto_dev_password');
+            if (savedDevPass) {
+                DEV_PASSWORD = savedDevPass;
+                document.getElementById('currentDevPassword').value = DEV_PASSWORD;
+            }
+        }
+        
+        // Initialisation
+        loadPasswords();
+    </script>
+</body>
+</html>
